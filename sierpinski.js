@@ -1,18 +1,13 @@
-function main() {
-    var corners = [{x: 128, y: 0}, {x: 0, y: 255}, {x: 255, y: 255}];
-
-    var canvas = document.getElementById('canvas');
-    canvas.width = 300;
-    canvas.height = 300;
-    var ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#333";
-
+function sierpinskiChaos(width, height, totalPoints) {
     function random() {
         return Math.floor(Math.random() * 3);
     }
 
-    function randomCorner() {
-        return corners[random()];
+    function _randomCorner(width, height) {
+        var corners = [point(Math.round(width/2), 0), point(0, height), point(width, height)];
+        return function () {
+            return corners[random()];
+        }
     }
 
     function addPoints(u, v) {
@@ -29,11 +24,25 @@ function main() {
         return point(x, y);
     }
 
-    var pt = point(0, 0);
-    for (var i = 0; i < 100000; i++) {
-        var corner = randomCorner();
-        pt = dividePoint(addPoints(pt, corner), 2);
-        ctx.fillRect(pt.x, pt.y, 1, 1);
+    return function (func) {
+        var randomCorner = _randomCorner(width, height);
+        var pt = randomCorner();
+        for (var i = 0; i < totalPoints; i++) {
+            var corner = randomCorner();
+            pt = dividePoint(addPoints(pt, corner), 2);
+            func(pt);
+        }
     }
+}
 
+function main() {
+    var canvas = document.getElementById('canvas');
+    canvas.width = 300;
+    canvas.height = 300;
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#333";
+    var sierpinski = sierpinskiChaos(255, 255, 1000000);
+    sierpinski(function (pt) {
+        ctx.fillRect(pt.x, pt.y, 1, 1);
+    });
 }

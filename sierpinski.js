@@ -24,13 +24,24 @@ function sierpinskiChaos(width, height, totalPoints) {
         return point(x, y);
     }
 
-    return function (func) {
-        var randomCorner = _randomCorner(width, height);
-        var pt = randomCorner();
-        for (var i = 0; i < totalPoints; i++) {
+    var count = 0;
+    var current = null;
+    var randomCorner = _randomCorner(width, height);
+    var pt = randomCorner();
+    return {
+        next: function () {
+            if (count == totalPoints) {
+                return null;
+            }
             var corner = randomCorner();
             pt = dividePoint(addPoints(pt, corner), 2);
-            func(pt);
+            current = pt;
+
+            count = count + 1;
+            return current;
+        },
+        current: function () {
+            return current;
         }
     }
 }
@@ -42,7 +53,14 @@ function main() {
     var ctx = canvas.getContext("2d");
     ctx.fillStyle = "#333";
     var sierpinski = sierpinskiChaos(255, 255, 1000000);
-    sierpinski(function (pt) {
+    var run = function () {
+        var pt = sierpinski.next();
+        if (pt == null) {
+            return;
+        }
         ctx.fillRect(pt.x, pt.y, 1, 1);
-    });
+        setTimeout(run, 10);
+    };
+
+    run();
 }
